@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To-Do App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    .task-form {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+    }
+
+    .task-form input, .task-form textarea {
+      width: calc(100% - 10px); /* Adjust width to account for padding and margins */
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    .task-form textarea {
+      height: 80px; /* Fixed height for the textarea */
+      resize: none; /* Prevent the textarea from being resized */
+    }
+
+    .task-form button {
+      padding: 10px 15px;
+      background-color: #28a745;
+      border: none;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .task-form button:hover {
+      background-color: #218838;
+    }
+
+    .tasks {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .task-column {
+      width: 48%;
+    }
+
+    .task-column h2 {
+      font-size: 20px;
+      margin-bottom: 15px;
+      color: #555;
+    }
+
+    .task-list {
+      list-style-type: none;
+      padding: 0;
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* Align items to the start */
+  margin-bottom: 15px;
+  padding: 15px;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+}
+
+.task-item div {
+  flex: 1; /* Allow text div to grow and take available space */
+  min-width: 0; /* Prevent overflow issues */
+  margin-right: 10px; /* Space between text and actions */
+}
+
+.task-item p {
+  margin: 0;
+  /* word-wrap: break-word; Break long words */
+  /* overflow-wrap: break-word; Better support for overflow */
+  max-height: 60px; /* Set a max height to limit space */
+  overflow: hidden; /* Hide overflow */
+  text-overflow: ellipsis; /* Show ellipsis when text overflows */
+}
+
+.actions {
+  display: flex; /* Align action icons in a row */
+  justify-content: end;
+  align-items: center; /* Center icons vertically */
+  white-space: nowrap; /* Prevent line breaks */
+}
+
+.actions a {
+  margin-left: 10px; /* Space between action icons */
+  color: #007bff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+
+    .actions a:hover {
+      color: #0056b3;
+    }
+
+    .actions a.complete {
+      color: #28a745;
+    }
+
+    .actions a.edit {
+      color: #ffc107;
+    }
+
+    .actions a.delete {
+      color: #dc3545;
+    }
+
+    .modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0, 0, 0); /* Fallback color */
+  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+  max-width: 500px; /* Limit the width of the modal */
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+/* Modal input and textarea styling */
+.modal-content input[type="text"],
+.modal-content textarea {
+  width: 100%; /* Full width */
+  padding: 10px; /* Add padding inside the input */
+  margin: 10px 0; /* Space between inputs */
+  border: 1px solid #ccc; /* Light border */
+  border-radius: 5px; /* Rounded corners */
+  box-sizing: border-box; /* Include padding and border in element's width/height */
+  font-size: 16px; /* Slightly larger font */
+  font-family: Arial, sans-serif;
+  transition: all 0.3s ease; /* Smooth transition for hover/focus states */
+}
+
+/* Focus state for input and textarea */
+.modal-content input[type="text"]:focus,
+.modal-content textarea:focus {
+  border-color: #007bff; /* Change border color on focus */
+  outline: none; /* Remove default browser outline */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Add a subtle shadow on focus */
+}
+
+/* Style for the textarea to match the input */
+.modal-content textarea {
+  resize: vertical; /* Allow vertical resizing but not horizontal */
+  min-height: 100px; /* Set a minimum height for better UX */
+}
+
+/* Styling the submit button */
+.modal-content button[type="submit"] {
+  background-color: #007bff; /* Primary button color */
+  color: white; /* White text */
+  padding: 10px 20px; /* Padding inside the button */
+  border: none; /* Remove default border */
+  border-radius: 5px; /* Rounded corners */
+  cursor: pointer; /* Show pointer cursor on hover */
+  font-size: 16px; /* Font size */
+  font-weight: bold; /* Make text bold */
+  width: 100%; /* Full width button */
+  margin-top: 10px; /* Add space above the button */
+  transition: background-color 0.3s ease; /* Smooth transition for hover state */
+}
+
+/* Button hover state */
+.modal-content button[type="submit"]:hover {
+  background-color: #0056b3; /* Darker shade on hover */
+}
+
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>To-Do App</h1>
+
+    <div class="task-form">
+      <form id="add-task">
+        <input type="text" name="title" placeholder="Task Title" class="task-input">
+        <textarea name="description" rows="3" placeholder="Task Description" class="task-textarea"></textarea>
+        <button type="submit">Add Task</button>
+      </form>
+    </div>
+    
+
+    <div class="tasks">
+      <!-- Pending Tasks Column -->
+      <div class="task-column">
+        <h2>Pending Tasks</h2>
+        <ul class="pending-task-list task-list">
+          <% if (pendingTasks && pendingTasks.length > 0) { %>
+            <% pendingTasks.forEach(function(task) { %>
+              <li class="task-item">
+                <div>
+                  <p><strong><%= task.title %></strong></p>
+                  <p><%= task.description %></p>
+                </div>
+                <div class="actions">
+                  <a href="#" id="markCompleted-<%= task._id %>" class="mark-completed" title="Mark as Completed"><i class="fas fa-check-circle"></i></a>
+                  <a href="#" id="edit-<%= task._id %>" class="edit" title="Edit Task"><i class="fas fa-edit"></i></a>
+                  <a href="#" id="delete-<%= task._id %>" class="delete" title="Delete Task"><i class="fas fa-trash"></i></a>
+                </div>
+              </li>
+              
+            <% }) %>
+          <% } else { %>
+            <li>No pending tasks</li>
+          <% } %>
+        </ul>
+      </div>
+
+      <!-- Completed Tasks Column -->
+      <div class="task-column">
+        <h2>Completed Tasks</h2>
+        <ul class="completed-task-list task-list">
+          <% if (completedTasks && completedTasks.length > 0) { %>
+            <% completedTasks.forEach(function(task) { %>
+              <li class="task-item">
+                <div>
+                  <p><strong><%= task.title %></strong></p>
+                  <p><%= task.description %></p>
+                </div>
+                <div class="actions">
+                  <a href="#" id="markPending-<%= task._id %>" class="mark-pending" title="Mark as Pending"><i class="fas fa-undo"></i></a>
+                  <a href="#" id="edit-<%= task._id %>" class="edit" title="Edit Task"><i class="fas fa-edit"></i></a>
+                  <a href="#" id="delete-<%= task._id %>" class="delete" title="Delete Task"><i class="fas fa-trash"></i></a>
+                </div>
+              </li>
+            <% }) %>
+          <% } else { %>
+            <li>No completed tasks</li>
+          <% } %>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Edit Task Modal -->
+<div id="editTaskModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>Edit Task</h2>
+    <form id="editTaskForm">
+      <input type="hidden" name="taskId" id="taskId">
+      <input type="text" name="title" id="taskTitle" placeholder="Task Title" required>
+      <textarea name="description" id="taskDescription" rows="3" placeholder="Task Description" required></textarea>
+      <button type="submit">Save Changes</button>
+    </form>
+  </div>
+</div>
+
+
+<script>
+
+// add task
+
+const taskForm = document.getElementById('add-task');
+
+
+taskForm.addEventListener('submit', function(event) {
+  event.preventDefault(); 
+
+  const title = taskForm.querySelector('input[name="title"]').value;
+  const description = taskForm.querySelector('textarea[name="description"]').value;
+
+
+  fetch('/tasks', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ title, description }), 
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log('Task added:', data.newTask); 
+
+    const pendingTaskList = document.querySelector('.task-list'); 
+    const newTaskItem = document.createElement('li');
+    newTaskItem.classList.add('task-item');
+    newTaskItem.innerHTML = `
+      <div>
+          <p><strong>${data.newTask.title}</strong></p>
+          <p>${data.newTask.description}</p>
+        </div>
+        <div class="actions">
+          <a href="#" id="markCompleted-${data.newTask._id}" class="mark-completed" title="Mark as Completed">
+            <i class="fas fa-check-circle"></i>
+          </a>
+          <a href="#" id="edit-${data.newTask._id}" class="edit" title="Edit Task">
+            <i class="fas fa-edit"></i>
+          </a>
+          <a href="#" id="delete-${data.newTask._id}" class="delete" title="Delete Task">
+            <i class="fas fa-trash"></i>
+          </a>
+        </div>
+    `;
+
+    pendingTaskList.appendChild(newTaskItem);
+
+    taskForm.reset();
+  })
+  .catch(error => {
+    console.error('There was a problem with the fetch operation:', error); 
+  });
+});
+
+
+// marks completed
+const completedLinks = document.querySelectorAll('.mark-completed');
+
+completedLinks.forEach(link => {
+  link.addEventListener('click', function(event) {
+    event.preventDefault(); 
+    const elementId = this.id; 
+    const taskId = elementId.replace('markCompleted-', ''); 
+
+
+    fetch(`/tasks/${taskId}/completed`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json', 
+      },
+      body: JSON.stringify({ status: 'completed' }) 
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json(); 
+    })
+    .then(data => {
+      console.log('Task marked as completed:', data); 
+
+      
+      const pendingTaskItem = this.closest('.task-item'); 
+      const completedTaskList = document.querySelector('.completed-task-list');
+
+ 
+      pendingTaskItem.remove(); 
+
+      const newCompletedTaskItem = document.createElement('li');
+      newCompletedTaskItem.classList.add('task-item');
+      newCompletedTaskItem.innerHTML = `
+        <div>
+          <p><strong>${data.completedTask.title}</strong></p>
+          <p>${data.completedTask.description}</p>
+        </div>
+        <div class="actions">
+          <a href="#" id="markPending-${data.completedTask._id}" class="mark-pending" title="Mark as Pending">
+            <i class="fas fa-undo"></i>
+          </a>
+          <a href="#" id="edit-${data.completedTask._id}" class="edit" title="Edit Task">
+            <i class="fas fa-edit"></i>
+          </a>
+          <a href="#" id="delete-${data.completedTask._id}" class="delete" title="Delete Task">
+            <i class="fas fa-trash"></i>
+          </a>
+        </div>
+      `;
+
+      completedTaskList.appendChild(newCompletedTaskItem); 
+    })
+    .catch(error => {
+      console.error('There was a problem with the fetch operation:', error); 
+    });
+  });
+});
+
+// marks pending
+const pendingLinks = document.querySelectorAll('.mark-pending');
+
+pendingLinks.forEach(link => {
+  link.addEventListener('click', function(event) {
+    event.preventDefault(); 
+    const elementId = this.id;
+    const taskId = elementId.replace('markPending-', ''); 
+
+ 
+    fetch(`/tasks/${taskId}/pending`, {
+      method: 'PATCH', 
+      headers: {
+        'Content-Type': 'application/json', 
+      },
+      body: JSON.stringify({ status: 'pending' }) 
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json(); 
+    })
+    .then(data => {
+
+
+      const completedTaskItem = this.closest('.task-item'); 
+      const pendingTaskList = document.querySelector('.pending-task-list'); 
+
+      completedTaskItem.remove(); 
+
+      const newPendingTaskItem = document.createElement('li');
+      newPendingTaskItem.classList.add('task-item');
+      newPendingTaskItem.innerHTML = `
+        <div>
+          <p><strong>${data.pendingTask.title}</strong></p>
+          <p>${data.pendingTask.description}</p>
+        </div>
+        <div class="actions">
+          <a href="#" id="markCompleted-${data.pendingTask._id}" class="mark-completed" title="Mark as Completed">
+            <i class="fas fa-check-circle"></i>
+          </a>
+          <a href="#" id="edit-${data.pendingTask._id}" class="edit" title="Edit Task">
+            <i class="fas fa-edit"></i>
+          </a>
+          <a href="#" id="delete-${data.pendingTask._id}" class="delete" title="Delete Task">
+            <i class="fas fa-trash"></i>
+          </a>
+        </div>
+      `;
+
+
+      pendingTaskList.appendChild(newPendingTaskItem);
+    })
+    .catch(error => {
+      console.error('There was a problem with the fetch operation:', error); 
+    });
+  });
+});
+
+
+// deletes task
+const deleteLinks = document.querySelectorAll('.delete');
+
+deleteLinks.forEach(link => {
+  link.addEventListener('click', function(event) {
+    event.preventDefault();
+    const elementId = this.id; 
+    const taskId = elementId.replace('delete-', ''); 
+
+
+    fetch(`/tasks/${taskId}`, {
+      method: 'DELETE', 
+      headers: {
+        'Content-Type': 'application/json', 
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json(); 
+    })
+    .then(data => {
+      console.log('Task removed:', data);
+
+
+      const taskItem = this.closest('.task-item'); 
+      taskItem.remove(); 
+    })
+    .catch(error => {
+      console.error('There was a problem with the fetch operation:', error); 
+    });
+  });
+});
+
+
+// update task 
+const modal = document.getElementById('editTaskModal');
+const closeModal = document.querySelector('.close');
+const editForm = document.getElementById('editTaskForm');
+
+const editLinks = document.querySelectorAll('.edit');
+editLinks.forEach(link => {
+  link.addEventListener('click', function(event) {
+    event.preventDefault(); 
+
+    const elementId = this.id; 
+    const taskId = elementId.replace('edit-', ''); 
+    const taskTitle = this.closest('.task-item').querySelector('strong').textContent;
+    const taskDescription = this.closest('.task-item').querySelector('p:last-of-type').textContent;
+
+    document.getElementById('taskId').value = taskId;
+    document.getElementById('taskTitle').value = taskTitle;
+    document.getElementById('taskDescription').value = taskDescription;
+
+
+    modal.style.display = 'block';
+  });
+});
+
+closeModal.addEventListener('click', function() {
+  modal.style.display = 'none';
+});
+
+window.addEventListener('click', function(event) {
+  if (event.target === modal) {
+    modal.style.display = 'none';
+  }
+});
+
+// Handle the form submission
+editForm.addEventListener('submit', function(event) {
+  event.preventDefault(); 
+
+  const taskId = document.getElementById('taskId').value;
+  const updatedTitle = document.getElementById('taskTitle').value;
+  const updatedDescription = document.getElementById('taskDescription').value;
+
+
+  fetch(`/tasks/${taskId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ title: updatedTitle, description: updatedDescription })
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json();
+  })
+  .then(data => {
+
+    const taskItem = document.getElementById(`edit-${taskId}`).closest('.task-item');
+
+    taskItem.querySelector('strong').textContent = data.updatedTask.title;
+    taskItem.querySelector('p:last-of-type').textContent = data.updatedTask.description;
+
+    modal.style.display = 'none';
+  })
+  .catch(error => {
+    console.error('There was a problem with the fetch operation:', error);
+  });
+});
+
+
+
+</script>
+
+</body>
+</html>
